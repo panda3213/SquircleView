@@ -20,7 +20,7 @@ internal object SquircleShadowProvider {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 outline.setPath(SquirclePath.getSquirclePath(shape, view.width, view.height, cornerSmoothing))
             } else {
-                outline.setRoundRect(shape.toRect(), SquirclePath.getRadiusByHeightOrWidth(view.height, view.width, cornerSmoothing))
+                outline.setRoundRect(shape.toRect(), SquirclePath.getRadiusAndSmoothing(view.height, view.width, cornerSmoothing).first)
             }
         }
     }

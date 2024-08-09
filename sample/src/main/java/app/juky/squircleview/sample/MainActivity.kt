@@ -60,6 +60,8 @@ class MainActivity : AppCompatActivity() {
                 binding.normalButtonWithImage.style.setCornerSmoothing(progress)
                 binding.verticalButton.style.setCornerSmoothing(progress)
                 binding.seekerValue.text = progress.toString()
+                binding.buttonWithShapeDrawable.shapeAppearanceModel = SquircleShape.getShapeAppearance(progress).build()
+                binding.imageWithShapeAppearance.shapeAppearanceModel = SquircleShape.getShapeAppearance(progress).build()
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -68,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         // The methods down below are native ShapeDrawable and ShapeAppearance usages
+        binding.tester.shapeAppearanceModel = SquircleShape.getShapeAppearance().build()
         binding.buttonWithShapeDrawable.shapeAppearanceModel = SquircleShape.getShapeAppearance().build()
         binding.imageWithShapeAppearance.shapeAppearanceModel = SquircleShape.getShapeAppearance().build()
         binding.constraintLayoutWithShapeDrawable.background = SquircleShape.getShapeDrawable(binding.constraintLayoutWithShapeDrawable).apply {

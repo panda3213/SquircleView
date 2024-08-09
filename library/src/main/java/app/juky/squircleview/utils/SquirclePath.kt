@@ -4,19 +4,19 @@ import android.graphics.Path
 import android.graphics.RectF
 import androidx.annotation.IntRange
 import app.juky.squircleview.data.Constants.DEFAULT_CORNER_SMOOTHING
-import app.juky.squircleview.data.Constants.MAX_DEFAULT_CORNER_SMOOTHING
 import kotlin.math.min
 
 object SquirclePath {
-    fun getRadiusByHeightOrWidth(
+    fun getRadiusAndSmoothing(
         height: Int,
         width: Int,
         @IntRange(from = 0, to = DEFAULT_CORNER_SMOOTHING)
         cornerSmoothing: Int = DEFAULT_CORNER_SMOOTHING.toInt()
-    ): Float {
+    ): Pair<Float, Float> {
+        val radius = min(width, height) / 2f
         // Percentage cannot exceed 100%, convert it to a decimal percentage (e.g. 0.6)
         val smoothingPercentage = min(cornerSmoothing, 100) / 100.0
-        return (min(height, width) * (smoothingPercentage * MAX_DEFAULT_CORNER_SMOOTHING).toFloat())
+        return Pair(radius, smoothingPercentage.toFloat())
     }
 
     /**
@@ -34,72 +34,30 @@ object SquirclePath {
         @IntRange(from = 0, to = DEFAULT_CORNER_SMOOTHING)
         cornerSmoothing: Int = DEFAULT_CORNER_SMOOTHING.toInt()
     ): Path {
-        val radius = getRadiusByHeightOrWidth(height, width, cornerSmoothing)
-
-        val startX = rect.left
-        val endX = rect.right
-        val startY = rect.top
-        val endY = rect.bottom
+        val radiusAndSmoothing = getRadiusAndSmoothing(height, width, cornerSmoothing)
+        val radius = radiusAndSmoothing.first
+        val smoothing = radiusAndSmoothing.second
 
         val path = Path()
-
         // Start position
-        path.moveTo(startX, startY + radius)
-
-        // Top left corner
-        path.cubicTo(
-            startX,
-            startY,
-            startX,
-            startY,
-            startX + radius,
-            startY
-        )
-
+        path.moveTo(radius, 0f)
         // Top line
-        path.lineTo(endX - radius, startY)
-
+        path.lineTo((width - radius), 0f)
         // Top right corner
-        path.cubicTo(
-            endX,
-            startY,
-            endX,
-            startY,
-            endX,
-            startY + radius,
-        )
-
+        path.cubicTo((width - radius * (1 - smoothing)), 0f, width.toFloat(), (radius * (1 - smoothing)), width.toFloat(), radius)
         // Right line
-        path.lineTo(endX, endY - radius)
-
+        path.lineTo(width.toFloat(), (height - radius))
         // Bottom right corner
-        path.cubicTo(
-            endX,
-            endY,
-            endX,
-            endY,
-            endX - radius,
-            endY,
-        )
-
+        path.cubicTo(width.toFloat(), ((height - radius * (1 - smoothing))), ((width - radius * (1 - smoothing))), height.toFloat(), (width - radius), height.toFloat())
         // Bottom line
-        path.lineTo(startX + radius, endY)
-
+        path.lineTo(radius, height.toFloat())
         // Bottom left corner
-        path.cubicTo(
-            startX,
-            endY,
-            startX,
-            endY,
-            startX,
-            endY - radius,
-        )
-
+        path.cubicTo(((radius * (1 - smoothing))), height.toFloat(), 0f, ((height - radius * (1 - smoothing))), 0f, (height - radius))
         // Left line
-        path.lineTo(startX, endY + radius)
-
+        path.lineTo(0f, radius)
+        // Top left corner
+        path.cubicTo(0f, ((radius * (1 - smoothing))), ((radius * (1 - smoothing))), 0f, radius, 0f)
         path.close()
-
         return path
     }
 }

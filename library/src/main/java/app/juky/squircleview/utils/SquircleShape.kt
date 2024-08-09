@@ -11,6 +11,7 @@ import com.google.android.material.shape.CornerSize
 import com.google.android.material.shape.CutCornerTreatment
 import com.google.android.material.shape.ShapeAppearanceModel
 import com.google.android.material.shape.ShapePath
+import kotlin.math.min
 
 /**
  * This class provides a ShapePath, ShapeAppearance and ShapeDrawable which can be used
@@ -24,63 +25,28 @@ object SquircleShape {
         @IntRange(from = 0, to = DEFAULT_CORNER_SMOOTHING)
         cornerSmoothing: Int = DEFAULT_CORNER_SMOOTHING.toInt()
     ): ShapePath {
-        val radius = SquirclePath.getRadiusByHeightOrWidth(height, width, cornerSmoothing)
+        val radiusAndSmoothing = SquirclePath.getRadiusAndSmoothing(height, width, cornerSmoothing)
+        val radius = radiusAndSmoothing.first
+        val smoothing = radiusAndSmoothing.second
 
-        val startX = rect.left
-        val endX = rect.right
-        val startY = rect.top
-        val endY = rect.bottom
-
-        val path = ShapePath()
-
-        // Top left corner
-        path.cubicToPoint(
-            startX,
-            startY,
-            startX,
-            startY,
-            startX + radius,
-            startY
-        )
-
+        // Start position
+        val path = ShapePath(radius, 0f)
         // Top line
-        path.lineTo(endX - radius, startY)
-
+        path.lineTo((width - radius), 0f)
         // Top right corner
-        path.cubicToPoint(
-            endX,
-            startY,
-            endX,
-            startY,
-            endX,
-            startY + radius,
-        )
-
+        path.cubicToPoint((width - radius * (1 - smoothing)), 0f, width.toFloat(), (radius * (1 - smoothing)), width.toFloat(), radius)
         // Right line
-        path.lineTo(endX, endY - radius)
-
+        path.lineTo(width.toFloat(), (height - radius))
         // Bottom right corner
-        path.cubicToPoint(
-            endX,
-            endY,
-            endX,
-            endY,
-            endX - radius,
-            endY,
-        )
-
+        path.cubicToPoint(width.toFloat(), ((height - radius * (1 - smoothing))), ((width - radius * (1 - smoothing))), height.toFloat(), (width - radius), height.toFloat())
         // Bottom line
-        path.lineTo(startX + radius, endY)
-
+        path.lineTo(radius, height.toFloat())
         // Bottom left corner
-        path.cubicToPoint(
-            startX,
-            endY,
-            startX,
-            endY,
-            startX,
-            endY - radius,
-        )
+        path.cubicToPoint(((radius * (1 - smoothing))), height.toFloat(), 0f, ((height - radius * (1 - smoothing))), 0f, (height - radius))
+        // Left line
+        path.lineTo(0f, radius)
+        // Top left corner
+        path.cubicToPoint(0f, ((radius * (1 - smoothing))), ((radius * (1 - smoothing))), 0f, radius, 0f)
 
         return path
     }
@@ -104,6 +70,14 @@ object SquircleShape {
         )
 
         return object : ShapeDrawable(PathShape(path, view.width.toFloat(), view.height.toFloat())) {
+            //可以重写下面这2个,根据getColorStateList的状态显示不同的colorRes
+//            override fun isStateful(): Boolean {
+//                return super.isStateful()
+//            }
+//
+//            override fun onStateChange(stateSet: IntArray?): Boolean {
+//                return super.onStateChange(stateSet)
+//            }
             override fun onBoundsChange(bounds: Rect) {
                 super.onBoundsChange(bounds)
                 shape = PathShape(
@@ -130,19 +104,14 @@ object SquircleShape {
         override fun getCornerPath(shapePath: ShapePath, angle: Float, interpolation: Float, bounds: RectF, size: CornerSize) {
             val startX = 0f
             val startY = 0f
-            val radius = SquirclePath.getRadiusByHeightOrWidth(bounds.height().toInt(), bounds.width().toInt(), cornerSmoothing)
+            val radiusAndSmoothing = SquirclePath.getRadiusAndSmoothing(bounds.height().toInt(), bounds.width().toInt(), cornerSmoothing)
+            val radius = radiusAndSmoothing.first
+            val smoothing = radiusAndSmoothing.second
 
             shapePath.lineTo(startX, startY + radius)
             shapePath.reset(0f, radius)
 
-            shapePath.cubicToPoint(
-                startX,
-                startY,
-                startX,
-                startY,
-                startX + radius,
-                startY
-            )
+            shapePath.cubicToPoint(0f, ((radius * (1 - smoothing))), ((radius * (1 - smoothing))), 0f, radius, 0f)
         }
     }
 }
